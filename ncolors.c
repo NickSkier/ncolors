@@ -7,7 +7,8 @@
 
 typedef enum {
 	ALL_COLORS,
-	CUSTOM_COLOR_RGB
+	CUSTOM_COLOR_RGB,
+	CUSTOM_COLOR_NCURSES_RGB,
 } OutputType;
 
 bool parse_short(const char *str, short *result) {
@@ -21,6 +22,23 @@ bool parse_short(const char *str, short *result) {
 		return false;
 	}
 	*result = (short)val;
+	return true;
+}
+
+bool parse_rgb(const char *arg_r, const char *arg_g, const char *arg_b
+               , short *r, short *g, short *b
+               , bool ncurses_rgb
+              ) {
+	if (!parse_short(arg_r, r) ||
+			!parse_short(arg_g, g) ||
+			!parse_short(arg_b, b)
+		 ) {
+		return false;
+	}
+	if ((ncurses_rgb && (*r > 1000 || *g > 1000 || *b > 1000))
+			|| (!ncurses_rgb && (*r > 255 || *g > 255 || *b > 255))) {
+		return false;
+ 	}
 	return true;
 }
 
@@ -49,24 +67,44 @@ void print_all_colors() {
 	attroff(COLOR_PAIR(color));
 }
 
-void print_rgb_color(short r, short g, short b) {
-	init_color(1, r, g, b);
+void print_rgb_color(short r, short g, short b, bool ncurses_rgb) {
+	if (ncurses_rgb)
+		init_color(1, r, g, b);
+	else
+		init_color(1, (short)(r*1000/255), (short)(g*1000/255), (short)(b*1000/255));
+
 	init_pair(1, 1, 1);
 	attron(COLOR_PAIR(1));
 	short cell_size = 5;
 	printw("%*c", cell_size, '.');
 	attroff(COLOR_PAIR(1));
-	printw(" rgb(%d, %d, %d)\n", r*255/1000, g*255/1000, b*255/1000);
-	printw("ncurses values rgb(%d, %d, %d)", r, g, b);
+
+	if (ncurses_rgb) {
+		printw(" rgb(%d, %d, %d)\n", r*255/1000, g*255/1000, b*255/1000);
+		printw("ncurses values rgb(%d, %d, %d)", r, g, b);
+	}
+	else {
+		printw(" rgb(%d, %d, %d)\n", r, g, b);
+		printw("ncurses values rgb(%d, %d, %d)"
+		       , (short)(r*1000/255), (short)(g*1000/255), (short)(b*1000/255)
+		      );
+	}
 }
 
 int main(int argc, char *argv[])
 {
 	OutputType output;
-	if (argc == 1) output = ALL_COLORS;
-	else if (argc == 5 && !strcmp(argv[1], "--rgb")) output = CUSTOM_COLOR_RGB;
+	if (argc == 1) {
+		output = ALL_COLORS;
+	}
+	else if (argc == 5 && !strcmp(argv[1], "--rgb")) {
+		output = CUSTOM_COLOR_RGB;
+	}
+	else if (argc == 5 && !strcmp(argv[1], "--ncurses-rgb")) {
+		output = CUSTOM_COLOR_NCURSES_RGB;
+	}
 	else {
-		printf("Wrong number of arguments\n");
+		printf("Wrong arguments\n");
 		exit(1);
 	}
 
@@ -75,13 +113,17 @@ int main(int argc, char *argv[])
 		init_ncurses();
 		print_all_colors();
 	}
-	else if (output == CUSTOM_COLOR_RGB  &&
-			parse_short(argv[2], &r) &&
-			parse_short(argv[3], &g) &&
-			parse_short(argv[4], &b)
-		 ) {
+	else if (output == CUSTOM_COLOR_RGB
+					&& parse_rgb(argv[2], argv[3], argv[4], &r, &g, &b, false)
+		      ) {
 		init_ncurses();
-		print_rgb_color(r, g, b);
+		print_rgb_color(r, g, b, false);
+	}
+	else if (output == CUSTOM_COLOR_NCURSES_RGB
+					&& parse_rgb(argv[2], argv[3], argv[4], &r, &g, &b, true)
+		      ) {
+		init_ncurses();
+		print_rgb_color(r, g, b, true);
 	}
 	else {
 		printf("Wrong arguments values\n");
