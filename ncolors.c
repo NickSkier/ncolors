@@ -97,6 +97,7 @@ void print_help(const char *bin_path) {
 	printf("\n");
 	printf("Options:\n");
 	printf("  -h,--help\t\t\tPrint this help message and exit\n");
+	printf("  -a,--all\t\t\tDisplay 255 default ncurses colors\n");
 	printf("  --rgb VAL VAL VAL\t\tDisplay custom rgb color using values from 0 to 255\n");
 	printf("  --ncurses-rgb VAL VAL VAL\tDisplay custom rgb color using values from 0 to 1000\n");
 	printf("\n");
@@ -107,7 +108,7 @@ void print_help(const char *bin_path) {
 int main(int argc, char *argv[])
 {
 	OutputType output;
-	if (argc == 1) {
+	if (argc == 2 &&  (!strcmp(argv[1], "-a") || !strcmp(argv[1], "--all"))) {
 		output = ALL_COLORS;
 	}
 	else if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
@@ -120,8 +121,12 @@ int main(int argc, char *argv[])
 	else if (argc == 5 && !strcmp(argv[1], "--ncurses-rgb")) {
 		output = CUSTOM_COLOR_NCURSES_RGB;
 	}
+	else if (argc == 1) {
+		printf("Arguments requeired. Use -h,--help to print help message.\n");
+		exit(1);
+	}
 	else {
-		printf("Wrong arguments\n");
+		printf("Wrong arguments. Use -h,--help to print help message.\n");
 		exit(1);
 	}
 
@@ -143,7 +148,7 @@ int main(int argc, char *argv[])
 		print_rgb_color(r, g, b, true);
 	}
 	else {
-		printf("Wrong arguments values\n");
+		printf("Wrong arguments values. Use -h,--help to print help message.\n");
 		exit(1);
 	}
 
