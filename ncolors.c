@@ -91,11 +91,28 @@ void print_rgb_color(short r, short g, short b, bool ncurses_rgb) {
 	}
 }
 
+void print_help(const char *bin_path) {
+	printf("ncolors: display default 255 ncurses colors or display custom rgb color.\n");
+	printf("Usage: %s FLAG [VALUES]\n", bin_path);
+	printf("\n");
+	printf("Options:\n");
+	printf("  -h,--help\t\t\tPrint this help message and exit\n");
+	printf("  --rgb VAL VAL VAL\t\tDisplay custom rgb color using values from 0 to 255\n");
+	printf("  --ncurses-rgb VAL VAL VAL\tDisplay custom rgb color using values from 0 to 1000\n");
+	printf("\n");
+	printf("Example: ncolors --rgb 1 56 99\n");
+	printf("To exit press any key\n");
+}
+
 int main(int argc, char *argv[])
 {
 	OutputType output;
 	if (argc == 1) {
 		output = ALL_COLORS;
+	}
+	else if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+		print_help(argv[0]);
+		exit(0);
 	}
 	else if (argc == 5 && !strcmp(argv[1], "--rgb")) {
 		output = CUSTOM_COLOR_RGB;
@@ -132,4 +149,5 @@ int main(int argc, char *argv[])
 
 	getch();
 	endwin();
+	return 0;
 }
