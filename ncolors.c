@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ncurses.h>
+#include <string.h>
 
 typedef enum {
 	ALL_COLORS,
@@ -63,7 +64,7 @@ int main(int argc, char *argv[])
 {
 	OutputType output;
 	if (argc == 1) output = ALL_COLORS;
-	else if (argc == 4) output = CUSTOM_COLOR_RGB;
+	else if (argc == 5 && !strcmp(argv[1], "--rgb")) output = CUSTOM_COLOR_RGB;
 	else {
 		printf("Wrong number of arguments\n");
 		exit(1);
@@ -75,9 +76,9 @@ int main(int argc, char *argv[])
 		print_all_colors();
 	}
 	else if (output == CUSTOM_COLOR_RGB  &&
-			parse_short(argv[1], &r) &&
-			parse_short(argv[2], &g) &&
-			parse_short(argv[3], &b)
+			parse_short(argv[2], &r) &&
+			parse_short(argv[3], &g) &&
+			parse_short(argv[4], &b)
 		 ) {
 		init_ncurses();
 		print_rgb_color(r, g, b);
